@@ -2,31 +2,24 @@ import {basicSetup} from "codemirror"
 import {EditorView} from "@codemirror/view"
 import {python} from "@codemirror/lang-python"
 
+
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+<div id="docs">
+  <button type="button" class="btn btn-success" onclick="evaluatePython()">
+      Run
+  </button> 
+</div>
+<div id="code-container">
+</div>
+`
+
 const view = new EditorView({
-  doc: `\
-from edg import *
-`,
-  parent: document.body,
+  parent: document.getElementById("code-container"),
   extensions: [basicSetup, python()]
 })
 
-// document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-// <section id="next-steps">
-//   <div id="docs">
-//     <h2>Documentation</h2>
-//     <p>Your questions, answered</p>
-//     <ul>
-//       <li>
-//         <a href="https://vite.dev/" target="_blank">
-//           Explore Vite
-//         </a>
-//       </li>
-//       <li>
-//         <a href="https://www.typescriptlang.org" target="_blank">
-//           Learn more
-//         </a>
-//       </li>
-//     </ul>
-//   </div>
-// </section>
-// `
+view.dispatch({
+  changes: {from: 0, insert: `\
+from edg import *
+`}
+})
