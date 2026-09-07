@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
-    "codemirror": "^6.0.2"
+    "codemirror": "^6.0.2",
+    "pyodide": "^314.0.6"
   }
 }
