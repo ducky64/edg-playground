@@ -47,7 +47,17 @@ const view = new EditorView({
 })
 view.dispatch({
   changes: {from: 0, insert: `\
-print("ducks")
+from edg import *
+
+class MyBoard(SimpleBoardTop):
+    def contents(self) -> None:
+        super().contents()
+        self.mcu = self.Block(Xiao_Rp2040())
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+MyBoard
 `}
 })
 
@@ -56,7 +66,7 @@ function appendOutput(text: string) {
   outputElt.scrollTop = outputElt.scrollHeight;
 }
 
-runBtnElt.textContent = "Wait, Pyodide loading";
+runBtnElt.textContent = "Loading...";
 const pyWorker = new Worker(new URL('./pyworker.ts', import.meta.url), { type: 'module' });
 
 pyWorker.addEventListener('message', function readyListener (event: MessageEvent<PyWorkerResponse>) {

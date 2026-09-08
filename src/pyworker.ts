@@ -21,16 +21,14 @@ self.postMessage({ type: 'READY', ready: true });
 self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
   switch (event.data.type) {
     case 'RUN':
-      await runPythonCode(event.data.code);
+      try {
+        const context = {};
+        const result = await pyodide.runPythonAsync(event.data.code, context);
+        console.log(result.toString());
+        self.postMessage({ type: 'RESULT', data: result });
+      } catch (error) {
+        self.postMessage({ type: 'RESULT', data: error.message });
+      }
       break;
   }
 };
-
-async function runPythonCode(code: string) {
-  try {
-    const result = await pyodide.runPythonAsync(code);
-    self.postMessage({ type: 'RESULT', data: result });
-  } catch (error) {
-    self.postMessage({ type: 'RESULT', data: error.message });
-  }
-}
