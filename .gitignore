@@ -25,3 +25,6 @@ dist-ssr
 
 # Scala
 target
+
+# build outputs
+public/wheels

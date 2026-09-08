@@ -10,6 +10,11 @@ const pyodide = await loadPyodide({
     self.postMessage({ type: 'STDERR', data: text });;
   }
 });
+await pyodide.loadPackage("micropip");
+const micropip = pyodide.pyimport("micropip");
+await micropip.install(new URL('../wheels/edg-0.5.2-py3-none-any.whl', import.meta.url).href);
+
+const scalaWorker = new Worker(new URL('./scalaworker.ts', import.meta.url), { type: 'module' });
 
 self.postMessage({ type: 'READY', ready: true });
 
