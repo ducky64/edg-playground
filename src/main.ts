@@ -34,6 +34,7 @@ print("ducks")
 
 runBtnElt.textContent = "Wait, Pyodide loading";
 const pyWorker = new Worker(new URL('./pyworker.ts', import.meta.url), { type: 'module' });
+const scalaWorker = new Worker(new URL('./scalaworker.ts', import.meta.url), { type: 'module' });
 
 pyWorker.addEventListener('message', function readyListener (event: MessageEvent<PyWorkerResponse>) {
   switch (event.data.type) { 

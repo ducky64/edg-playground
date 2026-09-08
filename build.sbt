@@ -9,8 +9,7 @@ lazy val edgWebCompiler = project.in(file("."))
   .settings(
     scalaVersion := "2.13.18",
 
-    // Tell Scala.js that this is an application with a main method
-    scalaJSUseMainModuleInitializer := true,
+    scalaJSUseMainModuleInitializer := false,  // compile as library
 
     /* Configure Scala.js to emit modules in the optimal way to
      * connect to Vite's incremental reload.
