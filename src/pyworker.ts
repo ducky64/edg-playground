@@ -10,7 +10,7 @@ const pyodide = await loadPyodide({
     self.postMessage({ type: 'STDERR', data: text });;
   }
 });
-await pyodide.loadPackage("micropip");
+await pyodide.loadPackage(["micropip", "pydantic"]);
 const micropip = pyodide.pyimport("micropip");
 await micropip.install(new URL('../wheels/edg-0.5.2-py3-none-any.whl', import.meta.url).href);
 
