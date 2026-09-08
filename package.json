@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@scala-js/vite-plugin-scalajs": "^1.0.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
   },
