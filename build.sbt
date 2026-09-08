@@ -1,6 +1,6 @@
 import org.scalajs.linker.interface.ModuleSplitStyle
 
-lazy val edgCompiler = (project in file("PolymorphicBlocks/compiler"))  // proto imported transitively
+lazy val edgCompiler = project.in(file("PolymorphicBlocks/compiler"))  // proto imported transitively
   .enablePlugins(ScalaJSPlugin)
 
 lazy val edgWebCompiler = project.in(file("."))
