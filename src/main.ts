@@ -1,7 +1,7 @@
 import {basicSetup} from "codemirror"
 import {EditorView} from "@codemirror/view"
 import {python} from "@codemirror/lang-python"
-import { loadPyodide, version as pyodideVersion } from "pyodide";
+import type {PyWorkerRequest, PyWorkerResponse} from "./pyworkerapi.ts";
 
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -20,53 +20,69 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `
 
 let runBtnElt = document.querySelector<HTMLButtonElement>('#run-btn')!;
+let outputElt = document.querySelector<HTMLTextAreaElement>('#output')!;
 
 const view = new EditorView({
   parent: document.getElementById("code-container"),
   extensions: [basicSetup, python()]
 })
-
 view.dispatch({
   changes: {from: 0, insert: `\
 print("ducks")
 `}
 })
 
-async function initPyodide() {
-  let outputElt = document.querySelector<HTMLTextAreaElement>('#output')!;
+runBtnElt.textContent = "Wait, Pyodide loading";
+const pyWorker = new Worker(new URL('./pyworker.ts', import.meta.url), { type: 'module' });
 
-  outputElt.value = `Pyodide ${pyodideVersion} loading...`;
-
-  const pyodide = await loadPyodide({
-    indexURL: `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
-    stdout: (text) => {
-      outputElt.value += text + "\n";
-    },
-    stderr: (text) => {
-      outputElt.value += text + "\n";
-    }
-  });
-
-  outputElt.value = `Pyodide ${pyodideVersion} loaded.\n`;
-  runBtnElt.disabled = false;
-
-  return pyodide;
-}
-
-let pyodideFuture = initPyodide();
+pyWorker.addEventListener('message', function readyListener (event: MessageEvent<PyWorkerResponse>) {
+  switch (event.data.type) { 
+    case 'READY':
+      runBtnElt.textContent = "Run";
+      runBtnElt.disabled = false;
+      pyWorker.removeEventListener("message", readyListener);
+      break;
+    default:
+      console.log("readyListener: unexpected message from pyWorker", event.data);
+  }
+})
 
 async function evaluatePython() {
-  let pyodide = await pyodideFuture;
   runBtnElt.disabled = true;
-  try {
-      document.querySelector<HTMLTextAreaElement>('#output')!.value = "";
-      let text = view.state.doc.toString();
-      let output = pyodide.runPython(text);
-      document.querySelector<HTMLTextAreaElement>('#output')!.value += output;
-  } catch (err) {
-      document.querySelector<HTMLTextAreaElement>('#output')!.value += err;
-  }
+  outputElt.value = "";
+
+  let code = view.state.doc.toString();
+  let output = await evaluatePythonInner(
+    code,
+    (streamData) => {
+      outputElt.value += streamData + "\n";
+    }
+  );
+
+  outputElt.value += output;
   runBtnElt.disabled = false;
+}
+
+async function evaluatePythonInner(code: string, onStream: (data: string) => void) {
+  return new Promise((resolve, reject) => {
+    pyWorker.addEventListener('message', function listener (event: MessageEvent<PyWorkerResponse>) {
+      switch (event.data.type) { 
+        case 'RESULT':
+          pyWorker.removeEventListener("message", listener);
+          resolve(event.data.data);
+          break;
+        case 'STDOUT':
+        case 'STDERR':
+          onStream(event.data.data);
+          break;
+        default:
+          console.log("evaluatePythonInner: unexpected message from pyWorker", event.data);
+      }
+    })
+    pyWorker.postMessage({type: 'RUN', code} as PyWorkerRequest);
+  });
 }
 
 runBtnElt.addEventListener('click', evaluatePython);
+
+

@@ -1,0 +1,31 @@
+import { loadPyodide, version as pyodideVersion } from "pyodide";
+import type { PyWorkerRequest } from "./pyworkerapi";
+
+const pyodide = await loadPyodide({
+  indexURL: `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
+  stdout: (text) => {
+    self.postMessage({ type: 'STDOUT', data: text });
+  },
+  stderr: (text) => {
+    self.postMessage({ type: 'STDERR', data: text });;
+  }
+});
+
+self.postMessage({ type: 'READY', ready: true });
+
+self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
+  switch (event.data.type) {
+    case 'RUN':
+      await runPythonCode(event.data.code);
+      break;
+  }
+};
+
+async function runPythonCode(code: string) {
+  try {
+    const result = await pyodide.runPythonAsync(code);
+    self.postMessage({ type: 'RESULT', data: result });
+  } catch (error) {
+    self.postMessage({ type: 'RESULT', data: error.message });
+  }
+}
