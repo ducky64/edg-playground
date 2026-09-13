@@ -5,6 +5,7 @@ import hdlServerSource from './main/python/hdl_server.py?raw';
 
 import { edgjs } from '../target/scala-2.13/edgwebcompiler-fastopt/main.js';
 
+self.postMessage({ type: 'PROGRESS', data: "Loading Pyodide..." });
 const pyodide = await loadPyodide({
   indexURL: `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
   stdout: (text) => {
@@ -14,10 +15,13 @@ const pyodide = await loadPyodide({
     self.postMessage({ type: 'STDERR', data: text });;
   }
 });
+
+self.postMessage({ type: 'PROGRESS', data: "Loading Python packages..." });
 await pyodide.loadPackage(["micropip", "pydantic"]);
 const micropip = pyodide.pyimport("micropip");
 await micropip.install(new URL('../wheels/edg-0.5.2-py3-none-any.whl', import.meta.url).href);
 
+self.postMessage({ type: 'PROGRESS', data: "Initializing Python environment..." });
 const context = {};
 pyodide.runPython(hdlServerSource, context);
 

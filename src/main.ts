@@ -100,6 +100,9 @@ pyWorker.addEventListener('message', function readyListener (event: MessageEvent
       pyWorker.removeEventListener("message", readyListener);
       appendOutput("Ready\n");
       break;
+    case 'PROGRESS':
+      appendOutput(event.data.data + '\n');
+      break;
     case 'STDOUT':
     case 'STDERR':
       break;
@@ -138,6 +141,7 @@ async function evaluatePythonInner(code: string, onStream: (data: string) => voi
           break;
         case 'STDOUT':
         case 'STDERR':
+        case 'PROGRESS':
           onStream(event.data.data);
           break;
         default:
