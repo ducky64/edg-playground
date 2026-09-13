@@ -86,7 +86,10 @@ function appendOutput(text: string) {
   outputElt.scrollTop = outputElt.scrollHeight;
 }
 
+
 runBtnElt.textContent = "Run (loading...)";
+outputElt.value = "";
+appendOutput("Loading...\n");
 const pyWorker = new Worker(new URL('./pyworker.ts', import.meta.url), { type: 'module' });
 
 pyWorker.addEventListener('message', function readyListener (event: MessageEvent<PyWorkerResponse>) {
@@ -95,6 +98,10 @@ pyWorker.addEventListener('message', function readyListener (event: MessageEvent
       runBtnElt.textContent = "Run (Ctrl+↵)";
       runBtnElt.disabled = false;
       pyWorker.removeEventListener("message", readyListener);
+      appendOutput("Ready\n");
+      break;
+    case 'STDOUT':
+    case 'STDERR':
       break;
     default:
       console.log("readyListener: unexpected message from pyWorker", event.data);
