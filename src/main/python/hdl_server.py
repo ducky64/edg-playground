@@ -6,7 +6,7 @@ from edg.hdl_server.__main__ import process_request
 
 def edgjs_process_request_bytes(request_bytes: bytes) -> bytes:
     hdl_request = edgrpc.HdlRequest()
-    hdl_request.ParseFromString(request_bytes)
+    hdl_request.ParseFromString(request_bytes.to_py())
     hdl_response = process_request(hdl_request)
     if hdl_response is None:
         return b""
@@ -16,4 +16,5 @@ def edgjs_process_request_bytes(request_bytes: bytes) -> bytes:
 def compile_block(block: Type[Block]) -> bytes:
     block_obj = block()
     request = edgrpc.CompilerRequest(design=edgir.Design(contents=builder.elaborate_toplevel(block_obj)))
+    block_obj.refinements().populate_proto(request.refinements)
     return request.SerializeToString()

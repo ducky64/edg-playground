@@ -27,8 +27,8 @@ self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
   switch (event.data.type) {
     case 'RUN':
       try {
-        const result = pyodide.runPython(event.data.code, context);
-        console.log(result.toString());
+        const result = pyodide.runPython(event.data.code, context).toJs();
+        edgjs.compile(pyodide, result);
         self.postMessage({ type: 'RESULT', data: result });
       } catch (error) {
         self.postMessage({ type: 'RESULT', data: error.message });
