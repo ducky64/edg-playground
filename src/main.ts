@@ -124,6 +124,7 @@ async function evaluatePython() {
   );
 
   appendOutput(output);
+  runBtnElt.textContent = "Run (Ctrl+↵)";
   runBtnElt.disabled = false;
 }
 
