@@ -21,15 +21,19 @@ await micropip.install(new URL('../wheels/edg-0.5.2-py3-none-any.whl', import.me
 const context = {};
 pyodide.runPython(hdlServerSource, context);
 
+const postprocessor = pyodide.globals.get("postprocess_compiled_result")
+
 self.postMessage({ type: 'READY', ready: true });
 
 self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
   switch (event.data.type) {
     case 'RUN':
       try {
-        const result = pyodide.runPython(event.data.code, context).toJs();
-        edgjs.compile(pyodide, result);
-        self.postMessage({ type: 'RESULT', data: result });
+        const request = pyodide.runPython(event.data.code, context);
+        const compiled = edgjs.compile(pyodide, request);
+        const result = postprocessor(compiled);
+
+        self.postMessage({ type: 'RESULT', data: JSON.stringify(result, null, 2) });
       } catch (error) {
         self.postMessage({ type: 'RESULT', data: error.message });
       }
