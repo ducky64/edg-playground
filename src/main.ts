@@ -33,8 +33,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <section id="control">
   <button popovertarget="helpPopover">?</button>
   <button type="button" id="run-btn" class="btn btn-success" disabled></button> 
-  <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>no netlists</button> 
-  <button type="button" id="download-bom" class="btn btn-success" disabled>no BoM</button> 
+  <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>Download netlist</button> 
+  <button type="button" id="download-bom-btn" class="btn btn-success" disabled>Download BoM</button> 
 </section>
 <section id="code-container" style="flex: 8; display: flex; flex-direction: column; min-height: 100px">
 </section>
@@ -86,7 +86,7 @@ function appendOutput(text: string) {
   outputElt.scrollTop = outputElt.scrollHeight;
 }
 
-runBtnElt.textContent = "loading...";
+runBtnElt.textContent = "Run (loading...)";
 const pyWorker = new Worker(new URL('./pyworker.ts', import.meta.url), { type: 'module' });
 
 pyWorker.addEventListener('message', function readyListener (event: MessageEvent<PyWorkerResponse>) {
@@ -103,9 +103,8 @@ pyWorker.addEventListener('message', function readyListener (event: MessageEvent
 
 async function evaluatePython() {
   runBtnElt.disabled = true;
-  downloadNetlistElt.textContent = "no netlists";
+  runBtnElt.textContent = "Run (running...)";
   downloadNetlistElt.disabled = true;
-  downloadBomElt.textContent = "no BoM";
   downloadBomElt.disabled = true;
   outputElt.value = "";
 
