@@ -57,7 +57,7 @@ class MyBoard(SimpleBoardTop):
         self.connect(self.mcu.gnd, self.led.gnd)
         self.connect(self.mcu.gpio.request("led"), self.led.signal)
 
-MyBoard
+compile_block(MyBoard)
 `}
 })
 

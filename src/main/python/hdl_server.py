@@ -13,7 +13,7 @@ def edgjs_process_request_bytes(request_bytes: bytes) -> bytes:
     return hdl_response.SerializeToString()
 
 
-def compile_request(block: Type[Block]) -> bytes:
+def compile_block(block: Type[Block]) -> bytes:
     block_obj = block()
     request = edgrpc.CompilerRequest(design=edgir.Design(contents=builder.elaborate_toplevel(block_obj)))
-    request.SerializeToString()
+    return request.SerializeToString()
