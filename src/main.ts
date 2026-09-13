@@ -15,7 +15,23 @@ app.style.display = 'flex';
 app.style.flexDirection = 'column';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+<div id="helpPopover" popover>
+  <h3>EDG Playground</h3>
+  <p>
+    This is a web demo for <a href="https://github.com/BerkeleyHCI/PolymorphicBlocks/">EDG / Polymorphic Blocks</a>,
+    a fully open-source, Python-embedded board HDL featuring libraries of subcircuit generators. <br/>
+    This provides basic functionality to try out the HDL by runing code and generating a KiCad netlist and JLC-compatible BoM. <br/>
+    <br/>
+    New? Try following the <a href="https://github.com/BerkeleyHCI/PolymorphicBlocks/blob/master/getting-started.md">getting started tutorial</a> here. <br/>
+    <br/>
+    For more serious work, use the <a href="https://pypi.org/project/edg/">edg pip package</a> with your favorite local Python dev environment. <br/>
+    <br/>
+    See the source code and file issues on <a href="https://github.com/ducky64/edg-playground">GitHub</a>
+    This uses Pyodide and Scala.js to run the EDG compiler fully locally in the browser.
+  </p>
+</div>
 <section id="control">
+  <button popovertarget="helpPopover">?</button>
   <button type="button" id="run-btn" class="btn btn-success" disabled></button> 
   <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>no netlists</button> 
   <button type="button" id="download-bom" class="btn btn-success" disabled>no BoM</button> 
