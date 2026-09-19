@@ -31,12 +31,15 @@ def postprocess_compiled_result(result_bytes: bytes) -> dict:
     if result.errors:
       return {'errors': compiled.errors_str()}
 
+    design_name = compiled.design.contents.self_class.target.name.split('.')[-1]
+
     netlist_all = NetlistBackend().run(compiled)
     netlists_dict = {'_'.join(edgir.local_path_to_str_list(path)): netlist for path, netlist in netlist_all}
     bom_all = GenerateBom().run(compiled)
     assert len(bom_all) == 1, "expect exactly one unified BoM"
 
     return to_js({
+        'name': design_name,
         'netlists': netlists_dict,
         'bom': bom_all[0][1],
     })

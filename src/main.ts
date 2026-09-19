@@ -127,13 +127,13 @@ function downloadAsFile(filename: string, content: string) {
 
 function downloadNetlist() {
   if (lastResult && lastResult.type === 'RESULT') {
-    downloadAsFile('board.net', lastResult.netlist);
+    downloadAsFile(lastResult.name + '.net', lastResult.netlist);
   }
 }
 downloadNetlistElt.addEventListener('click', downloadNetlist);
 function downloadBom() {
   if (lastResult && lastResult.type === 'RESULT') {
-    downloadAsFile('board.csv', lastResult.bom);
+    downloadAsFile(lastResult.name + '.csv', lastResult.bom);
   }
 }
 downloadBomElt.addEventListener('click', downloadBom);
