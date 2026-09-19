@@ -27,6 +27,10 @@ pyodide.runPython(hdlServerSource, context);
 
 const postprocessor = pyodide.globals.get("postprocess_compiled_result")
 
+function compilerProgress(progress: string) {
+  self.postMessage({ type: 'PROGRESS', data: progress });
+}
+
 self.postMessage({ type: 'READY', ready: true });
 
 self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
@@ -34,7 +38,7 @@ self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
     case 'RUN':
       try {
         const request = pyodide.runPython(event.data.code, context);
-        const compiled = edgjs.compile(pyodide, request);
+        const compiled = edgjs.compile(compilerProgress, pyodide, request);
         const result = postprocessor(compiled);
 
         self.postMessage({ type: 'RESULT', netlist: result.netlists[''], bom: result.bom });

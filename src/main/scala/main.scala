@@ -46,10 +46,10 @@ class PyodideInterface(pyodide: js.Dynamic) extends ProtobufInterface {
   }
 }
 
-class LoggingPythonInterface(interface: ProtobufInterface) extends PythonInterface(interface) {
+class LoggingPythonInterface(interface: ProtobufInterface, progressFn: js.Dynamic) extends PythonInterface(interface) {
   override def onLibraryRequest(element: ref.LibraryPath): Unit = {
     // this needs to be here to only print on requests that made it to Python (instead of just hit cache)
-    System.out.println(s"Compile ${element.toSimpleString}")
+    progressFn(s"Compile ${element.toSimpleString}")
   }
 
   override def onLibraryRequestComplete(
@@ -58,7 +58,7 @@ class LoggingPythonInterface(interface: ProtobufInterface) extends PythonInterfa
   ): Unit = {
     result match {
       case Errorable.Error(msg) =>
-        System.out.println(
+        progressFn(
           f"Error while compiling ${element.toSimpleString}: $msg"
         )
       case _ =>
@@ -72,7 +72,7 @@ class LoggingPythonInterface(interface: ProtobufInterface) extends PythonInterfa
     val valuesString = values
       .map { case (path, value) => s"${ExprToString(path)}: ${value.toStringValue}" }
       .mkString(", ")
-    System.out.println(
+    progressFn(
       s"Generate ${element.toSimpleString} ($valuesString)"
     )
   }
@@ -84,7 +84,7 @@ class LoggingPythonInterface(interface: ProtobufInterface) extends PythonInterfa
   ): Unit = {
     result match {
       case Errorable.Error(msg) =>
-        System.out.println(
+        progressFn(
           f"Error while generating ${element.toSimpleString}: $msg"
         )
       case _ =>
@@ -97,7 +97,7 @@ class LoggingPythonInterface(interface: ProtobufInterface) extends PythonInterfa
   ): Unit = {
     result match {
       case Errorable.Error(msg) =>
-        System.out.println(
+        progressFn(
           f"Error while running refinement ${refinementPass.toSimpleString}: $msg"
         )
       case _ =>
@@ -110,7 +110,7 @@ class LoggingPythonInterface(interface: ProtobufInterface) extends PythonInterfa
   ): Unit = {
     result match {
       case Errorable.Error(msg) =>
-        System.out.println(
+        progressFn(
           f"Error while running backend ${backend.toSimpleString}: $msg"
         )
       case _ =>
@@ -152,12 +152,12 @@ object EdgCompilerJs {
   }
 
   @JSExport
-  def compile(pyodide: js.Dynamic, requestBytes: Uint8Array): Uint8Array = {
+  def compile(progressFn: js.Dynamic, pyodide: js.Dynamic, requestBytes: Uint8Array): Uint8Array = {
     val request = edgcompiler.CompilerRequest.parseFrom(uint8ArrayToBytes(requestBytes))
-    System.out.println(s"Compiling ${request.design.get.getContents.getSelfClass.toSimpleString}")
+    progressFn(s"Compiling ${request.design.get.getContents.getSelfClass.toSimpleString}")
 
     val pyLib = new PythonInterfaceLibrary()
-    val pyodideInterface = new LoggingPythonInterface(new PyodideInterface(pyodide))
+    val pyodideInterface = new LoggingPythonInterface(new PyodideInterface(pyodide), progressFn)
 
     val result = pyLib.withPythonInterface(pyodideInterface) {
       try {
