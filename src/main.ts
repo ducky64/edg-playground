@@ -111,9 +111,37 @@ pyWorker.addEventListener('message', function readyListener (event: MessageEvent
   }
 })
 
+let lastResult: PyWorkerResponse | null = null;
+
+function downloadAsFile(filename: string, content: string) {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadNetlist() {
+  if (lastResult && lastResult.type === 'RESULT') {
+    downloadAsFile('board.net', lastResult.netlist);
+  }
+}
+downloadNetlistElt.addEventListener('click', downloadNetlist);
+function downloadBom() {
+  if (lastResult && lastResult.type === 'RESULT') {
+    downloadAsFile('board.csv', lastResult.bom);
+  }
+}
+downloadBomElt.addEventListener('click', downloadBom);
+
 async function evaluatePython() {
   runBtnElt.disabled = true;
   runBtnElt.textContent = "Run (running...)";
+  lastResult = null;
   downloadNetlistElt.disabled = true;
   downloadBomElt.disabled = true;
   outputElt.value = "";
@@ -126,18 +154,29 @@ async function evaluatePython() {
     }
   );
 
-  appendOutput(output);
+  if (output.type === 'RESULT') {
+    appendOutput("Compilation complete\n");
+    lastResult = output;
+    downloadNetlistElt.disabled = false;
+    downloadBomElt.disabled = false;
+  } else if (output.type === 'ERROR') {
+    appendOutput("Error: " + output.error + "\n");
+  } else {
+    appendOutput("Unknown compilation completion result\n");
+  }
+  
   runBtnElt.textContent = "Run (Ctrl+↵)";
   runBtnElt.disabled = false;
 }
 
-async function evaluatePythonInner(code: string, onStream: (data: string) => void) {
+async function evaluatePythonInner(code: string, onStream: (data: string) => void): Promise<PyWorkerResponse> {
   return new Promise((resolve, reject) => {
     pyWorker.addEventListener('message', function listener (event: MessageEvent<PyWorkerResponse>) {
       switch (event.data.type) { 
         case 'RESULT':
+        case 'ERROR':
           pyWorker.removeEventListener("message", listener);
-          resolve(event.data.data);
+          resolve(event.data);
           break;
         case 'STDOUT':
         case 'STDERR':

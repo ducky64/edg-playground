@@ -37,9 +37,9 @@ self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
         const compiled = edgjs.compile(pyodide, request);
         const result = postprocessor(compiled);
 
-        self.postMessage({ type: 'RESULT', data: JSON.stringify(result, null, 2) });
+        self.postMessage({ type: 'RESULT', netlist: result.netlists[''], bom: result.bom });
       } catch (error) {
-        self.postMessage({ type: 'RESULT', data: error.message });
+        self.postMessage({ type: 'ERROR', error: error.message });
       }
       break;
   }
