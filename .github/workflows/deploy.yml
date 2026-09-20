@@ -48,11 +48,11 @@ jobs:
       - name: Build edg wheel
         run: python -m build PolymorphicBlocks --outdir public/wheels
 
-      - name: Run tests
-        run: npx vitest run
-
       - name: Build project
         run: npm run build
+
+      - name: Run tests
+        run: npx vitest run
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v7
