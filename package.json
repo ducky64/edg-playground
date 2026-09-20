@@ -10,12 +10,17 @@
   },
   "devDependencies": {
     "@scala-js/vite-plugin-scalajs": "^1.0.0",
+    "@vitest/browser-playwright": "^5.0.1",
     "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^5.0.1"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
     "codemirror": "^6.0.2",
     "pyodide": "^314.0.6"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }

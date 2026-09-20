@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { playwright } from '@vitest/browser-playwright'
 import path from "path";
 import scalaJSPlugin from "@scala-js/vite-plugin-scalajs";
 
@@ -24,6 +25,16 @@ export default defineConfig(({mode}) => {
           __dirname,
           `./target/scala-2.13/${scalaTarget}/main.js`
         ),
+      },
+    },
+    test: {
+      browser: {
+        provider: playwright(),
+        enabled: true,
+        headless: true,
+        instances: [
+          { browser: 'firefox' },
+        ],
       },
     }
 }});
