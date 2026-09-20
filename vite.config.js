@@ -10,6 +10,7 @@ export default defineConfig(({mode}) => {
 
   return {
     plugins: [scalaJSPlugin()],
+    base: './', // don't use absolute path since pages serves from its subfolder
     server: {
       headers: {
         'Cache-Control': 'no-store', // Disables dev server asset caching
