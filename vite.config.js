@@ -22,7 +22,7 @@ export default defineConfig(({mode}) => {
       // import ... from 'scalajs:*' doesn't seem to resolve properly, so this hacks around it
       alias: {
         "@edgjs": path.resolve(
-          __dirname,
+          import.meta.dirname,
           `./target/scala-2.13/${scalaTarget}/main.js`
         ),
       },
