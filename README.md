@@ -18,6 +18,7 @@ This builds into a fully client side web app, using pyodide to run Python in the
 This is a work in progress.
 
 Planned features
+- [ ] Examples menu
 - [ ] Library browser
 - [ ] Generate HDL code from library browser
 - [ ] Basic design inspector
