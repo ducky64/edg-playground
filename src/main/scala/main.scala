@@ -23,7 +23,7 @@ import edgir.schema.schema
 import java.io.{PrintWriter, StringWriter}
 import scala.scalajs.js
 import scala.scalajs.js.annotation._
-import scala.scalajs.js.typedarray.Uint8Array
+import scala.scalajs.js.typedarray._
 
 class PyodideInterface(pyodide: js.Dynamic) extends ProtobufInterface {
   protected val pyFunction = pyodide.globals.get("edgjs_process_request_bytes")
@@ -121,15 +121,12 @@ class LoggingPythonInterface(interface: ProtobufInterface, progressFn: js.Dynami
 @JSExportTopLevel("edgjs")
 object EdgCompilerJs {
   def bytesToUint8Array(bytes: Array[Byte]): Uint8Array = {
-    Uint8Array.from(js.Array(bytes.map(_.toShort): _*))
+    val intArray = byteArray2Int8Array(bytes)
+    new Uint8Array(intArray.buffer, intArray.byteOffset, intArray.length)
   }
 
   def uint8ArrayToBytes(uint8Array: Uint8Array): Array[Byte] = {
-    val bytes = new Array[Byte](uint8Array.length)
-    for (i <- 0 until uint8Array.length) {
-      bytes(i) = uint8Array(i).toByte
-    }
-    bytes
+    uint8Array.toArray.map(_.toByte)
   }
 
   private def constPropToSolved(vals: Map[IndirectDesignPath, ExprValue]): Seq[edgcompiler.CompilerResult.Value] = {
@@ -149,6 +146,12 @@ object EdgCompilerJs {
         linkPort = Some(link.asIndirect.toLocalPath)
       )
     }.toSeq
+  }
+
+  private def stackTraceToString(e: Throwable): String = {
+    val sw = new StringWriter()
+    e.printStackTrace(new PrintWriter(sw))
+    sw.toString
   }
 
   @JSExport
@@ -174,14 +177,12 @@ object EdgCompilerJs {
         )
       } catch {
         case e: Throwable =>
-          val sw = new StringWriter()
-          e.printStackTrace(new PrintWriter(sw))
           edgcompiler.CompilerResult(errors =
             Seq(edgcompiler.ErrorRecord(
               path = Some(DesignPath().asIndirect.toLocalPath),
               kind = "Internal error",
               name = "",
-              details = sw.toString
+              details = stackTraceToString(e)
             ))
           )
       }
