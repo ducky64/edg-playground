@@ -28,18 +28,18 @@ def postprocess_compiled_result(result_bytes: JsArray) -> dict:
     compiled = CompiledDesign.from_compiler_result(result)
     compiled.append_values(RefdesRefinementPass().run(compiled))
 
-    if result.errors:
-        return {'errors': compiled.errors_str()}
+    assert not result.errors, f"got compile errors: {result.errors}"
 
     design_name = compiled.design.contents.self_class.target.name.split('.')[-1]
 
     netlist_all = NetlistBackend().run(compiled)
-    netlists_dict = {'_'.join(edgir.local_path_to_str_list(path)): netlist for path, netlist in netlist_all}
     bom_all = GenerateBom().run(compiled)
+
     assert len(bom_all) == 1, "expect exactly one unified BoM"
+    assert len(netlist_all) == 1, "expect exactly one unified netlist"
 
     return to_js({
         'name': design_name,
-        'netlists': netlists_dict,
+        'netlist': netlist_all[0][1],
         'bom': bom_all[0][1],
     })

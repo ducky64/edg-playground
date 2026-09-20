@@ -14,7 +14,7 @@ app.style.height = '100%';
 app.style.display = 'flex';
 app.style.flexDirection = 'column';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+app.innerHTML = `
 <div id="helpPopover" popover>
   <h3>EDG Playground</h3>
   <p>
@@ -171,7 +171,7 @@ async function evaluatePython() {
 
 async function evaluatePythonInner(code: string, onStream: (data: string) => void): Promise<PyWorkerResponse> {
   return new Promise((resolve, reject) => {
-    pyWorker.addEventListener('message', function listener (event: MessageEvent<PyWorkerResponse>) {
+    const listener = (event: MessageEvent<PyWorkerResponse>) => {
       switch (event.data.type) { 
         case 'RESULT':
         case 'ERROR':
@@ -186,7 +186,8 @@ async function evaluatePythonInner(code: string, onStream: (data: string) => voi
         default:
           console.log("evaluatePythonInner: unexpected message from pyWorker", event.data);
       }
-    })
+    }
+    pyWorker.addEventListener('message', listener);
     pyWorker.postMessage({type: 'RUN', code} as PyWorkerRequest);
   });
 }
