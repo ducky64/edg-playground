@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build
+    name: Test and Build
     runs-on: ubuntu-latest
 
     steps:
@@ -28,6 +28,8 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Install Playwright
+        run: npx playwright install
 
       - uses: actions/setup-python@v6
         with:
@@ -45,6 +47,9 @@ jobs:
 
       - name: Build edg wheel
         run: python -m build PolymorphicBlocks --outdir public/wheels
+
+      - name: Run tests
+        run: npm vitest run
 
       - name: Build project
         run: npm run build
