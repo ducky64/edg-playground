@@ -3,12 +3,11 @@ from typing import Type
 from edg import edgrpc, Block, edgir, builder, CompiledDesign, RefdesRefinementPass, NetlistBackend
 from edg.electronics_model.BomBackend import GenerateBom
 from edg.hdl_server.__main__ import process_request
-from pyodide.ffi import to_js
+from pyodide.ffi import to_js, JsArray
 
-
-def edgjs_process_request_bytes(request_bytes: bytes) -> bytes:
+def edgjs_process_request_bytes(request_bytes: JsArray) -> JsArray:
     hdl_request = edgrpc.HdlRequest()
-    hdl_request.ParseFromString(request_bytes.to_py())
+    hdl_request.ParseFromString(bytes(request_bytes))
     hdl_response = process_request(hdl_request)
     if hdl_response is None:
         return b""
@@ -22,14 +21,14 @@ def compile_block(block: Type[Block]) -> bytes:
     return request.SerializeToString()
 
 
-def postprocess_compiled_result(result_bytes: bytes) -> dict:
+def postprocess_compiled_result(result_bytes: JsArray) -> dict:
     result = edgrpc.CompilerResult()
-    result.ParseFromString(result_bytes.to_py())
+    result.ParseFromString(bytes(result_bytes))
     compiled = CompiledDesign.from_compiler_result(result)
     compiled.append_values(RefdesRefinementPass().run(compiled))
 
     if result.errors:
-      return {'errors': compiled.errors_str()}
+        return {'errors': compiled.errors_str()}
 
     design_name = compiled.design.contents.self_class.target.name.split('.')[-1]
 
