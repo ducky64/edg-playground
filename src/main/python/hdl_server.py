@@ -5,12 +5,13 @@ from edg.electronics_model.BomBackend import GenerateBom
 from edg.hdl_server.__main__ import process_request
 from pyodide.ffi import to_js, JsArray
 
+
 def edgjs_process_request_bytes(request_bytes: JsArray) -> JsArray:
     hdl_request = edgrpc.HdlRequest()
     hdl_request.ParseFromString(bytes(request_bytes))
     hdl_response = process_request(hdl_request)
     if hdl_response is None:
-        return b""
+        return to_js(b"")
     return to_js(hdl_response.SerializeToString())
 
 
