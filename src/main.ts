@@ -147,24 +147,21 @@ async function runCode() {
   outputElt.value = "";
 
   let code = view.state.doc.toString();
-  let output = await evaluatePython(
-    pyWorker,
-    code,
-    (streamData) => {
-      appendOutput(streamData + "\n");
-    }
-  );
-
-  if (output.type === 'RESULT') {
+  try {
+    let output = await evaluatePython(
+      pyWorker,
+      code,
+      (streamData) => {
+        appendOutput(streamData + "\n");
+      }
+    );
     appendOutput("Compilation complete\n");
     lastResult = output;
     downloadNetlistElt.disabled = false;
     downloadBomElt.disabled = false;
     downloadJsonElt.disabled = false;
-  } else if (output.type === 'ERROR') {
-    appendOutput("Error: " + output.error + "\n");
-  } else {
-    appendOutput("Unknown compilation completion result\n");
+  } catch (error) {
+    appendOutput("Error: " + error + "\n");
   }
   
   runBtnElt.textContent = "Run (Ctrl+↵)";

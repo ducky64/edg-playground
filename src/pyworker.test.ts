@@ -2,7 +2,7 @@ import { beforeAll, expect, test } from 'vitest'
 import { evaluatePython } from './pyworkerapi';
 import { KEYBOARD } from './examples';
 
-let pyWorker
+let pyWorker: Worker;
 
 beforeAll(async () => {
   pyWorker = new Worker(new URL('./pyworker.ts', import.meta.url), { type: 'module' });
@@ -29,7 +29,7 @@ beforeAll(async () => {
 })
 
 test('builds example', async () => {
-  let keyboardResult = await evaluatePython(pyWorker, KEYBOARD, (data) => {})
+  let keyboardResult = await evaluatePython(pyWorker, KEYBOARD, (_data) => {})
   expect(keyboardResult.type).toBe('RESULT')
   expect(keyboardResult.name).toBe('Keyboard')
   expect(keyboardResult.netlist).contains("components")
