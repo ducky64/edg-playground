@@ -4,7 +4,7 @@ import type { PyWorkerRequest } from "./pyworkerapi";
 import hdlServerSource from './main/python/hdl_server.py?raw';
 
 // @ts-expect-error Scala.js bundle lacks type definitions
-import { edgjs } from 'scalajs:main.js';
+import { edgjs } from '@edgjs';
 
 let pyodide: Awaited<ReturnType<typeof loadPyodide>>;
 let context: any;
