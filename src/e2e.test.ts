@@ -1,4 +1,4 @@
-import { beforeAll, expect, test } from 'vitest'
+import { beforeAll, expect, test, vi } from 'vitest'
 import { page } from 'vitest/browser'
 
 
@@ -9,14 +9,6 @@ beforeAll(async () => {
     document.body.appendChild(appContainer);
   }
   await import('./main.ts');
-
-  window.addEventListener('error', (event) => {
-    console.error('Runtime error caught:', event.error);
-  });
-
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled Promise Rejection:', event.reason);
-  });
 })
 
 
@@ -34,5 +26,15 @@ test('builds and downloads example', async () => {
   // compilation happens here
   await expect.element(downloadBtn).toBeEnabled();
   await expect.element(runBtn).toBeEnabled();
-  document.querySelector<HTMLButtonElement>('#download-btn')?.click();
+
+  const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+  await downloadBtn.click();
+  expect(createObjectURLSpy).toHaveBeenCalledOnce
+
+  const blob = createObjectURLSpy.mock.calls[0][0] as Blob;
+  expect(blob.type).toBe('text/plain');
+  const blobText = await blob.text();
+  expect(blobText).contains('components');
+  expect(blobText).contains('STM32F103');
+  expect(blobText).contains('U1');
 }, 30_000)
