@@ -25,15 +25,17 @@ def compile_block(block: Type[Block]) -> bytes:
 def postprocess_compiled_result(result_bytes: JsArray) -> dict:
     result = edgrpc.CompilerResult()
     result.ParseFromString(bytes(result_bytes))
+    assert not result.errors, f"got compile errors: {result.errors}"
+
     compiled = CompiledDesign.from_compiler_result(result)
     compiled.append_values(RefdesRefinementPass().run(compiled))
 
-    assert not result.errors, f"got compile errors: {result.errors}"
-
     design_name = compiled.design.contents.self_class.target.name.split('.')[-1]
-
     netlist_all = NetlistBackend().run(compiled)
     bom_all = GenerateBom().run(compiled)
+    compiled_json = CompiledDesignExportTransform(compiled).transform()
+    cleaned_json = CompiledDesignExportTransform.postprocess_serialized_json(
+        compiled_json.model_dump_json(indent=2, exclude_none=True))
 
     assert len(bom_all) == 1, "expect exactly one unified BoM"
     assert len(netlist_all) == 1, "expect exactly one unified netlist"
@@ -42,4 +44,5 @@ def postprocess_compiled_result(result_bytes: JsArray) -> dict:
         'name': design_name,
         'netlist': netlist_all[0][1],
         'bom': bom_all[0][1],
+        'json': cleaned_json,
     })

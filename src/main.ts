@@ -35,7 +35,8 @@ app.innerHTML = `
   <button popovertarget="helpPopover">?</button>
   <button type="button" id="run-btn" class="btn btn-success" disabled></button> 
   <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>Download netlist</button> 
-  <button type="button" id="download-bom-btn" class="btn btn-success" disabled>Download BoM</button> 
+  <button type="button" id="download-bom-btn" class="btn btn-success" disabled>Download BoM</button>
+  <button type="button" id="download-json-btn" class="btn btn-success" disabled>Download JSON</button>
 </section>
 <section id="code-container" style="flex: 8; display: flex; flex-direction: column; min-height: 100px">
 </section>
@@ -49,6 +50,7 @@ app.innerHTML = `
 let runBtnElt = document.querySelector<HTMLButtonElement>('#run-btn')!;
 let downloadNetlistElt = document.querySelector<HTMLButtonElement>('#download-netlists-btn')!;
 let downloadBomElt = document.querySelector<HTMLButtonElement>('#download-bom-btn')!;
+let downloadJsonElt = document.querySelector<HTMLButtonElement>('#download-json-btn')!;
 let outputElt = document.querySelector<HTMLTextAreaElement>('#output')!;
 
 const runKeymap = Prec.highest(keymap.of([{
@@ -138,6 +140,12 @@ function downloadBom() {
   }
 }
 downloadBomElt.addEventListener('click', downloadBom);
+function downloadJson() {
+  if (lastResult && lastResult.type === 'RESULT') {
+    downloadAsFile(lastResult.name + '.json', lastResult.json);
+  }
+}
+downloadJsonElt.addEventListener('click', downloadJson);
 
 async function evaluatePython() {
   runBtnElt.disabled = true;
@@ -145,6 +153,7 @@ async function evaluatePython() {
   lastResult = null;
   downloadNetlistElt.disabled = true;
   downloadBomElt.disabled = true;
+  downloadJsonElt.disabled = true;
   outputElt.value = "";
 
   let code = view.state.doc.toString();
@@ -160,6 +169,7 @@ async function evaluatePython() {
     lastResult = output;
     downloadNetlistElt.disabled = false;
     downloadBomElt.disabled = false;
+    downloadJsonElt.disabled = false;
   } else if (output.type === 'ERROR') {
     appendOutput("Error: " + output.error + "\n");
   } else {
