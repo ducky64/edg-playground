@@ -1,5 +1,7 @@
 # edg-playground
 
+Run the web app on [Github Pages](https://ducky64.github.io/edg-playground/)!
+
 Web app demo for the [Polymorphic Blocks / edg](https://github.com/BerkeleyHCI/PolymorphicBlocks/) PCB HDL.
 Run HDL code in the browser and compile to a KiCad netlist and JLCPCB-friendly BoM.
 
