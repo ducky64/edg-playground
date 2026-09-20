@@ -62,7 +62,7 @@ let editorTheme = EditorView.theme({
   ".cm-scroller": { overflow: "auto" }
 });
 const view = new EditorView({
-  parent: document.getElementById("code-container"),
+  parent: document.getElementById("code-container")!,
   extensions: [basicSetup, runKeymap, editorTheme, python()]
 })
 view.dispatch({
@@ -170,7 +170,7 @@ async function evaluatePython() {
 }
 
 async function evaluatePythonInner(code: string, onStream: (data: string) => void): Promise<PyWorkerResponse> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const listener = (event: MessageEvent<PyWorkerResponse>) => {
       switch (event.data.type) { 
         case 'RESULT':

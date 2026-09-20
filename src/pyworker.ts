@@ -3,39 +3,50 @@ import type { PyWorkerRequest } from "./pyworkerapi";
 
 import hdlServerSource from './main/python/hdl_server.py?raw';
 
+// @ts-expect-error Scala.js bundle lacks type definitions
 import { edgjs } from '../target/scala-2.13/edgwebcompiler-fastopt/main.js';
 
-self.postMessage({ type: 'PROGRESS', data: "Loading Pyodide..." });
-const pyodide = await loadPyodide({
-  indexURL: `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
-  stdout: (text) => {
-    self.postMessage({ type: 'STDOUT', data: text });
-  },
-  stderr: (text) => {
-    self.postMessage({ type: 'STDERR', data: text });;
-  }
-});
+let pyodide: Awaited<ReturnType<typeof loadPyodide>>;
+let context: any;
+let postprocessor: any;
 
-self.postMessage({ type: 'PROGRESS', data: "Loading Python packages..." });
-await pyodide.loadPackage(["micropip", "pydantic"]);
-const micropip = pyodide.pyimport("micropip");
-await micropip.install(new URL('../wheels/edg-0.5.2-py3-none-any.whl', import.meta.url).href);
+async function init() {
+  self.postMessage({ type: 'PROGRESS', data: "Loading Pyodide..." });
+  pyodide = await loadPyodide({
+    indexURL: `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
+    stdout: (text) => {
+      self.postMessage({ type: 'STDOUT', data: text });
+    },
+    stderr: (text) => {
+      self.postMessage({ type: 'STDERR', data: text });;
+    }
+  });
 
-self.postMessage({ type: 'PROGRESS', data: "Initializing Python environment..." });
-const context = {};
-pyodide.runPython(hdlServerSource, context);
+  self.postMessage({ type: 'PROGRESS', data: "Loading Python packages..." });
+  await pyodide.loadPackage(["micropip", "pydantic"]);
+  const micropip = pyodide.pyimport("micropip");
+  await micropip.install(new URL('../wheels/edg-0.5.2-py3-none-any.whl', import.meta.url).href);
 
-const postprocessor = pyodide.globals.get("postprocess_compiled_result")
+  self.postMessage({ type: 'PROGRESS', data: "Initializing Python environment..." });
+  context = {};
+  pyodide.runPython(hdlServerSource, context);
 
-function compilerProgress(progress: string) {
-  self.postMessage({ type: 'PROGRESS', data: progress });
+  postprocessor = pyodide.globals.get("postprocess_compiled_result")
+
+  self.postMessage({ type: 'READY', ready: true });
 }
 
-self.postMessage({ type: 'READY', ready: true });
+const initPromise = init();
 
 self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
+  await initPromise;
+
   switch (event.data.type) {
     case 'RUN':
+      function compilerProgress(progress: string) {
+        self.postMessage({ type: 'PROGRESS', data: progress });
+      }
+
       try {
         const request = pyodide.runPython(event.data.code, context);
         const compiled = edgjs.compile(compilerProgress, pyodide, request);
@@ -43,8 +54,10 @@ self.onmessage = async (event: MessageEvent<PyWorkerRequest>) => {
 
         self.postMessage({ type: 'RESULT', name: result.name, netlist: result.netlist, bom: result.bom });
       } catch (error) {
-        self.postMessage({ type: 'ERROR', error: error.message });
+        self.postMessage({ type: 'ERROR', error: (error as Error).message });
       }
       break;
+    default:
+      self.postMessage({ type: 'ERROR', error: "Unexpected message type " + event.data.type });
   }
 };
