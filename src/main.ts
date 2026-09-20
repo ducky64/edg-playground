@@ -34,7 +34,7 @@ app.innerHTML = `
   <a href="https://github.com/ducky64/edg-playground">edg-playground</a> v0.0 (preview)
   <button popovertarget="helpPopover">?</button>
   <button type="button" id="run-btn" class="btn btn-success" disabled></button> 
-  <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>Download netlist</button> 
+  <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>Download KiCad netlist</button> 
   <button type="button" id="download-bom-btn" class="btn btn-success" disabled>Download BoM</button>
   <button type="button" id="download-json-btn" class="btn btn-success" disabled>Download JSON</button>
 </section>
