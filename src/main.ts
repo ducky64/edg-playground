@@ -2,7 +2,9 @@ import {basicSetup} from "codemirror"
 import {EditorView, keymap} from "@codemirror/view"
 import { Prec } from "@codemirror/state";
 import {python} from "@codemirror/lang-python"
-import type {PyWorkerRequest, PyWorkerResponse} from "./pyworkerapi.ts";
+import {KEYBOARD} from "./examples.ts";
+import type {PyWorkerResponse} from "./pyworkerapi.ts";
+import {evaluatePython} from "./pyworkerapi.ts";
 
 // take up the whole vertical space
 document.documentElement.style.height = '100%';
@@ -69,44 +71,7 @@ const view = new EditorView({
   extensions: [basicSetup, runKeymap, editorTheme, python()]
 })
 view.dispatch({
-  changes: {from: 0, insert: `\
-from edg import *
-
-
-class Keyboard(SimpleBoardTop):
-    def contents(self) -> None:
-        super().contents()
-
-        self.usb = self.Block(UsbCReceptacle())
-        self.reg = self.Block(LinearRegulator(3.3 * Volt(tol=0.05)))
-        self.connect(self.usb.gnd, self.reg.gnd)
-        self.connect(self.usb.pwr, self.reg.pwr_in)
-
-        with self.implicit_connect(
-            ImplicitConnect(self.reg.pwr_out, [Power]),
-            ImplicitConnect(self.reg.gnd, [Common]),
-        ) as imp:
-            self.mcu = imp.Block(IoController())
-            self.connect(self.usb.usb, self.mcu.usb.request())
-
-            self.sw = self.Block(SwitchMatrix(ncols=3, nrows=4))
-            self.connect(self.sw.cols, self.mcu.gpio.request_vector("sw_col"))
-            self.connect(self.sw.rows, self.mcu.gpio.request_vector("sw_row"))
-
-            self.enc = imp.Block(DigitalRotaryEncoder())
-            self.connect(self.enc.a, self.mcu.gpio.request("enc_a"))
-            self.connect(self.enc.b, self.mcu.gpio.request("enc_b"))
-            self.connect(self.enc.with_mixin(DigitalRotaryEncoderSwitch()).sw, self.mcu.gpio.request("enc_sw"))
-
-    def refinements(self) -> Refinements:
-        return super().refinements() + Refinements(
-            class_refinements=[
-                (IoController, Stm32f103),
-                (Switch, KailhSocket),
-            ])
-
-compile_block(Keyboard)
-`}
+  changes: {from: 0, insert: KEYBOARD}
 })
 
 function appendOutput(text: string) {
@@ -172,7 +137,7 @@ function downloadJson() {
 }
 downloadJsonElt.addEventListener('click', downloadJson);
 
-async function evaluatePython() {
+async function runCode() {
   runBtnElt.disabled = true;
   runBtnElt.textContent = "Run (running...)";
   lastResult = null;
@@ -182,7 +147,8 @@ async function evaluatePython() {
   outputElt.value = "";
 
   let code = view.state.doc.toString();
-  let output = await evaluatePythonInner(
+  let output = await evaluatePython(
+    pyWorker,
     code,
     (streamData) => {
       appendOutput(streamData + "\n");
@@ -205,27 +171,4 @@ async function evaluatePython() {
   runBtnElt.disabled = false;
 }
 
-async function evaluatePythonInner(code: string, onStream: (data: string) => void): Promise<PyWorkerResponse> {
-  return new Promise((resolve, _reject) => {
-    const listener = (event: MessageEvent<PyWorkerResponse>) => {
-      switch (event.data.type) { 
-        case 'RESULT':
-        case 'ERROR':
-          pyWorker.removeEventListener("message", listener);
-          resolve(event.data);
-          break;
-        case 'STDOUT':
-        case 'STDERR':
-        case 'PROGRESS':
-          onStream(event.data.data);
-          break;
-        default:
-          console.log("evaluatePythonInner: unexpected message from pyWorker", event.data);
-      }
-    }
-    pyWorker.addEventListener('message', listener);
-    pyWorker.postMessage({type: 'RUN', code} as PyWorkerRequest);
-  });
-}
-
-runBtnElt.addEventListener('click', evaluatePython);
+runBtnElt.addEventListener('click', runCode);
