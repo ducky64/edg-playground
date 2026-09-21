@@ -3,6 +3,9 @@ from edg import *
 
 
 class Keyboard(SimpleBoardTop):
+    """Basic mechanical keyboard example using a switch matrix.
+    Requires the Keyswitch Kicad Library from the KiCad Plugin and Content Manager."""
+
     def contents(self) -> None:
         super().contents()
 
@@ -37,6 +40,9 @@ from edg import *
 
 
 class Keyboard(SimpleBoardTop):
+    """Mechanical keyboard example with extra features: per-switch RGBs, rotary encoder, OLED.
+    Requires the Keyswitch Kicad Library from the KiCad Plugin and Content Manager."""
+
     def contents(self) -> None:
         super().contents()
 
@@ -134,6 +140,8 @@ class UartConnector(Connector, Block):
 
 
 class UsbUart(JlcBoardTop):
+    """USB-UART adapter."""
+
     def contents(self) -> None:
         super().contents()
         self.usb_uart = self.Block(UsbCReceptacle())
@@ -178,6 +186,8 @@ from edg import *
 
 
 class LedMatrix(JlcBoardTop):
+    """Charlieplexed LED matrix controlled from a ESP32-C3."""
+
     def contents(self) -> None:
         super().contents()
 
@@ -235,7 +245,8 @@ from edg import *
 
 
 class XiaoBlinky(SimpleBoardTop):
-    """A basic microcontroller dev board with a LED and switch."""
+    """A basic microcontroller dev board with a LED and switch.
+    Requires ths SeeedStudio footprint libraries: https://github.com/Seeed-Studio/OPL_Kicad_Library"""
 
     def contents(self) -> None:
         super().contents()
