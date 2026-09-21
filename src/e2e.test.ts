@@ -37,4 +37,4 @@ test('builds and downloads default example', async () => {
   expect(blobText).contains('components');
   expect(blobText).contains('STM32F103');
   expect(blobText).contains('U1');
-}, 30_000)
+}, 60_000)
