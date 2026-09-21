@@ -2,7 +2,7 @@ import {basicSetup} from "codemirror"
 import {EditorView, keymap} from "@codemirror/view"
 import { Prec } from "@codemirror/state";
 import {python} from "@codemirror/lang-python"
-import {KEYBOARD} from "./examples.ts";
+import {EXAMPLES} from "./examples.ts";
 import type {PyWorkerResponse} from "./pyworkerapi.ts";
 import {evaluatePython} from "./pyworkerapi.ts";
 
@@ -35,6 +35,9 @@ app.innerHTML = `
 <section id="control">
   <a href="https://github.com/ducky64/edg-playground">edg-playground</a> v0.0 (preview)
   <button popovertarget="helpPopover">?</button>
+  <select id="examples-select" class="form-select">
+    <option value="" selected>Examples...</option>
+  </select>
   <button type="button" id="run-btn" class="btn btn-success" disabled></button> 
   <button type="button" id="download-netlists-btn" class="btn btn-success" disabled>Download KiCad netlist</button> 
   <button type="button" id="download-bom-btn" class="btn btn-success" disabled>Download BoM</button>
@@ -50,6 +53,7 @@ app.innerHTML = `
 `
 
 let runBtnElt = document.querySelector<HTMLButtonElement>('#run-btn')!;
+let examplesSelectElt = document.querySelector<HTMLSelectElement>('#examples-select')!;
 let downloadNetlistElt = document.querySelector<HTMLButtonElement>('#download-netlists-btn')!;
 let downloadBomElt = document.querySelector<HTMLButtonElement>('#download-bom-btn')!;
 let downloadJsonElt = document.querySelector<HTMLButtonElement>('#download-json-btn')!;
@@ -71,14 +75,38 @@ const view = new EditorView({
   extensions: [basicSetup, runKeymap, editorTheme, python()]
 })
 view.dispatch({
-  changes: {from: 0, insert: KEYBOARD}
+  changes: {from: 0, insert: Object.entries(EXAMPLES)[0][1]}
 })
+
+
+for (const [key, _code] of Object.entries(EXAMPLES)) {
+  const option = document.createElement('option');
+  option.value = key;
+  option.textContent = key;
+  examplesSelectElt.appendChild(option);
+}
+
+examplesSelectElt.addEventListener('change', () => {
+  const selectedKey = examplesSelectElt.value;
+  const newCode = EXAMPLES[selectedKey];
+  examplesSelectElt.selectedIndex = 0; // reset to default option
+
+  if (newCode) {
+    view.dispatch({
+      changes: {
+        from: 0,
+        to: view.state.doc.length,
+        insert: newCode,
+      },
+    });
+  }
+});
+
 
 function appendOutput(text: string) {
   outputElt.value += text;
   outputElt.scrollTop = outputElt.scrollHeight;
 }
-
 
 runBtnElt.textContent = "Run (loading...)";
 outputElt.value = "";

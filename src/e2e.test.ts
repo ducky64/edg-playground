@@ -12,7 +12,7 @@ beforeAll(async () => {
 })
 
 
-test('builds and downloads example', async () => {
+test('builds and downloads default example', async () => {
   const runBtn = page.getByRole('button', { name: /Run/i });
   const downloadBtn = page.getByRole('button', { name: /Download KiCad Netlist/i });
   await expect.element(runBtn).toBeInTheDocument();

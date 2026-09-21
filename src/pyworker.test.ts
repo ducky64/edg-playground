@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest'
 import { evaluatePython } from './pyworkerapi';
-import { KEYBOARD } from './examples';
+import { EXAMPLES } from './examples';
 
 let pyWorker: Worker;
 
@@ -29,7 +29,7 @@ beforeAll(async () => {
 })
 
 test('builds example', async () => {
-  let keyboardResult = await evaluatePython(pyWorker, KEYBOARD, (_data) => {})
+  let keyboardResult = await evaluatePython(pyWorker, EXAMPLES["Keyboard"], (_data) => {})
   expect(keyboardResult.type).toBe('RESULT')
   expect(keyboardResult.name).toBe('Keyboard')
   expect(keyboardResult.netlist).contains("components")
