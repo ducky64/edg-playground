@@ -230,9 +230,32 @@ class LedMatrix(JlcBoardTop):
 compile_block(LedMatrix)
 `
 
-export const EXAMPLES = {
+const XIAO_BLINKY = `\
+from edg import *
+
+
+class XiaoBlinky(SimpleBoardTop):
+    """A basic microcontroller dev board with a LED and switch."""
+
+    def contents(self) -> None:
+        super().contents()
+        self.mcu = self.Block(Xiao_Rp2040())
+        self.led = self.Block(IndicatorLed())
+        self.connect(self.mcu.gnd, self.led.gnd)
+        self.connect(self.mcu.gpio.request("led"), self.led.signal)
+
+        self.sw = self.Block(DigitalSwitch())
+        self.connect(self.mcu.gnd, self.sw.gnd)
+        self.connect(self.mcu.gpio.request("sw"), self.sw.out)
+
+
+compile_block(XiaoBlinky)
+`
+
+export const EXAMPLES: Record<string, string> = {
     "Keyboard": KEYBOARD,
     "Loaded Keyboard": FULL_KEYBOARD,
     "USB UART": USB_UART,
     "Charlieplexed LEDs": CHARLIE_MATRIX,
+    "Xiao RP2040 Blinky": XIAO_BLINKY,
 }
